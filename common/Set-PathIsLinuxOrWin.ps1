@@ -1,4 +1,4 @@
-function Test-PathIsLinuxOrWin {
+function Set-PathIsLinuxOrWin {
   param (
     [Parameter(Mandatory)]
     [string]$FilePath

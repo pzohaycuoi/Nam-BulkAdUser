@@ -1,4 +1,4 @@
-function Test-CsvRequiredHeader {  
+function Get-CsvRequiredHeader {  
   param (
     [Parameter(Mandatory)]
     [string]$FilePath,
