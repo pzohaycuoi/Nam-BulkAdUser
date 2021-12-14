@@ -27,28 +27,12 @@ function Search-DataAndLocation {
       Country       = $getRefDataInput.Country
       OuPath        = $getRefDataInput.OuPath
     }
+    $result | Add-Member -NotePropertyName "LocationData" -NotePropertyValue $locationData
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
   }
   else {
-
-    $FirstName = $InputData.FirstName
-    $LastName = $InputData.LastName
-    $Title = $InputData.Title
-    $Department = $InputData.Department
-    $Manager = $InputData.Manager
-    $Location = $InputData.Location
-    $Result = "FAIL"
-    
-    $finalizedObject = [PSCustomObject]@{
-
-      FirstName  = $FirstName
-      LastName   = $LastName
-      Title      = $Title
-      Department = $Department
-      Manager    = $Manager
-      Location   = $Location
-      Result     = $Result
-
-    }
-    return $finalizedObject  
+    $result | Add-Member -NotePropertyName "LocationData" -NotePropertyValue $null
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+    return $result
   }
 }
