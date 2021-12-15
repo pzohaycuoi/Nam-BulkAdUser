@@ -1,12 +1,10 @@
 function Search-DataAndLocation {
   param (
     [Parameter(Mandatory, Position=0)]
-    [String]
-    $Location,
+    [String]$Location,
 
     [Parameter(Mandatory, Position=1)]
-    [System.Object]
-    $ReferenceData
+    [System.Object]$ReferenceData
   )
 
   # Get location data and check if input data exist
@@ -29,6 +27,7 @@ function Search-DataAndLocation {
     }
     $result | Add-Member -NotePropertyName "LocationData" -NotePropertyValue $locationData
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
+    return $result
   }
   else {
     $result | Add-Member -NotePropertyName "LocationData" -NotePropertyValue $null
