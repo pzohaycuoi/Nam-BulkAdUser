@@ -26,11 +26,13 @@ function Search-DataAndLocation {
       OuPath        = $getRefDataInput.OuPath
     }
     $result | Add-Member -NotePropertyName "LocationData" -NotePropertyValue $locationData
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Success: get location $($Location) data"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
     return $result
   }
   else {
     $result | Add-Member -NotePropertyName "LocationData" -NotePropertyValue $null
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: unable to get location $($Location) data"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
     return $result
   }

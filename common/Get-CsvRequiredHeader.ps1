@@ -1,9 +1,9 @@
 function Get-CsvRequiredHeader {  
   param (
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory, Position=0)]
     [string]$FilePath,
 
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory, Position=1)]
     [string]$RequiredHeaderFile
   )
 
@@ -31,5 +31,15 @@ function Get-CsvRequiredHeader {
 
   $result | Add-Member -NotePropertyName "HeaderIncluded" -NotePropertyValue $headerIncluded
   $result | Add-Member -NotePropertyName "HeaderNotIncluded" -NotePropertyValue $headerNotIncluded
-  return $result
+  
+  if (-not ($result.HeaderNotIncluded.count -gt 0)) {
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Success: $($FilePath) has all required headers"
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
+    return $result
+  }
+  else {
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: $($FilePath) doesn't have all required headers"
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+    return $result
+  }
 }

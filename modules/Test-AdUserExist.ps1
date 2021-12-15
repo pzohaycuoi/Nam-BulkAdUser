@@ -28,7 +28,7 @@ function Test-AdUserExist {
     }
   }
   catch {
-    $result | Add-Member -NotePropertyName "Exist" -NotePropertyValue $false
+    $result | Add-Member -NotePropertyName "Exist" -NotePropertyValue $null
     $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
     return $result

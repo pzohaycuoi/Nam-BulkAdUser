@@ -43,11 +43,12 @@ function New-AdUserProcess {
     [string]$Path,
 
     [Parameter(Position = 14)]
-    [SecureString]$AccountPassword
+    [string]$AccountPassword
   )
 
   # Create ad user
-
+  $passwordPlainText = $AccountPassword
+  $password = $AccountPassword | ConvertTo-SecureString
   $adUserInfo = [PSCustomObject]@{
     FirstName      = $FirstName
     LastName       = $LastName
@@ -86,10 +87,14 @@ function New-AdUserProcess {
       -AccountPassword $password `
       -ChangePasswordAtLogon $true `
       -ErrorAction Stop
-    
+  
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Success: User $($Name) has been created"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
+    return $result
   }
   catch {
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+    return $result
   }
 }
