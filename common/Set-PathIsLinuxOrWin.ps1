@@ -10,12 +10,13 @@ function Set-PathIsLinuxOrWin {
   $getCurrentPath = (pwd).Path  
   
   if ($getCurrentPath -clike "*\*") {    
-    $FilePath = $FilePath.Replace("/","\")
+    $FilePath = $FilePath.Replace("/", "\")
     $result | Add-Member -NotePropertyName "FilePath" -NotePropertyValue $FilePath
     $result | Add-Member -NotePropertyName "OS" -NotePropertyValue "Windows"
     return $result
-  } elseif ($getCurrentPath -clike "*/*") {
-    $FilePath = $FilePath.Replace("\","/")
+  }
+  elseif ($getCurrentPath -clike "*/*") {
+    $FilePath = $FilePath.Replace("\", "/")
     $result | Add-Member -NotePropertyName "FilePath" -NotePropertyValue $FilePath
     $result | Add-Member -NotePropertyName "OS" -NotePropertyValue "Linux"
     return $result

@@ -1,9 +1,9 @@
 function Get-CsvRequiredHeader {  
   param (
-    [Parameter(Mandatory, Position=0)]
+    [Parameter(Mandatory, Position = 0)]
     [string]$FilePath,
 
-    [Parameter(Mandatory, Position=1)]
+    [Parameter(Mandatory, Position = 1)]
     [string]$RequiredHeaderFile
   )
 
