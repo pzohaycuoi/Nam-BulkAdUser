@@ -1,7 +1,5 @@
 function New-NamAdUser {
-
   param (
-
     [Parameter(Mandatory)]
     [string]$FirstName,
 
@@ -18,13 +16,22 @@ function New-NamAdUser {
     [string]$Manager,
 
     [Parameter(Mandatory)]
-    [string]$Location
+    [string]$Location,
 
+    [AllowEmptyString()]
+    [string]$EmployeeNumber
   )
   
-  $importAdModuleStat = Import-AdModule
-  if ($true -eq $importAdModuleStat) {
-    $importLocationData = Import-LocationData
+  # logging and result
+  $logPath = "$($scriptDir)\log\"
+  $logPath = Set-PathIsLinuxOrWin -FilePath $logPath
+  $logFile = New-Item -Path $logPath.FilePath -Name "log-$(get-date -Format ddMMyyyy-hhmmss).log" -Force
+
+  # try to import ad module
+  $importAdModule = Import-NamModule -Module ActiveDirectory
+  if ($true -eq $importAdModule.Result) {
+    New-Log -Level "INFO" -Message $importAdModule.Log -LogFile $logFile.FullName
+    
     if (-not ($false -eq $importLocation)) {
       $inputObject = Receive-InputData `
         -FirstName $FirstName `
@@ -48,6 +55,7 @@ function New-NamAdUser {
     }
   }
   else {
+    New-Log -Level "ERROR" -Message $importAdModule.Log -LogFile $logFile.FullName
     break
   } 
 }
