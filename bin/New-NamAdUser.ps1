@@ -44,7 +44,18 @@ function New-NamAdUser {
       $getRefLocationData = Search-DataAndLocation -Location $Location -ReferenceData $locationCsvData
       if ($true -eq $getRefLocationData) {
         New-Log -Level "INFO" -Message $getRefLocationData.Log -LogFile $logFile
-        $getRefLocationData.LocationData
+        # create user basic information
+        $userSan = New-UserSamAccountName -FirstName $FirstName -LastName $LastName
+        # check if user with this san exist yet
+        $checkIfUserExist = Test-AdUserExist -SamAccountName $userSan
+        if ($false -eq $checkIfUserExist.Exist) {
+          New-Log -Level "INFO" -Message $checkIfUserExist.Log -LogFile $logFile
+        }
+        elseif ($true -eq $checkIfUserExist.Exist) {
+          New-Log -Level "WARN" -Message $checkIfUserExist.Log -LogFile $logFile
+        } else {
+          New-Log -Level "WARN" -Message $checkIfUserExist.Log -LogFile $logFile
+        }
       }
       else {
         New-Log -Level "WARN" -Message $getRefLocationData.Log -LogFile $logFile

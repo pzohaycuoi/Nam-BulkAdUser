@@ -16,33 +16,9 @@ function New-AdUserProcess {
     [string]$UserPrincipalName,
 
     [Parameter(Position = 5)]
-    [string]$Title,
-
-    [Parameter(Position = 6)]
-    [string]$Department,
-
-    [Parameter(Position = 7)]
-    [string]$Manager,
-
-    [Parameter(Position = 8)]
-    [string]$StreetAddress,
-
-    [Parameter(Position = 9)]
-    [string]$City,
-
-    [Parameter(Position = 10)]
-    [string]$State,
-
-    [Parameter(Position = 11)]
-    [string]$PostalCode,
-
-    [Parameter(Position = 12)]
-    [string]$Country,
-
-    [Parameter(Position = 13)]
     [string]$Path,
 
-    [Parameter(Position = 14)]
+    [Parameter(Position = 6)]
     [string]$AccountPassword
   )
 
@@ -54,14 +30,6 @@ function New-AdUserProcess {
     LastName       = $LastName
     Name           = $Name
     SamAccountName = $SamAccountName
-    Title          = $Title
-    Department     = $Department
-    Manager        = $Manager
-    StreetAddress  = $StreetAddress
-    City           = $City
-    State          = $State
-    PostalCode     = $PostalCode
-    Country        = $Country
     OuPath         = $OuPath
     Password       = $passwordPlainText
   }
