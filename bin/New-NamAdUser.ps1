@@ -22,8 +22,10 @@ function New-NamAdUser {
     [string]$EmployeeNumber
   )
   
+  # current path
+  $scriptDir = $PSScriptRoot
   # logging and result
-  $logPath = "$($scriptDir)\log\"
+  $logPath = "$($scriptDir)\..\log\"
   $logPath = Set-PathIsLinuxOrWin -FilePath $logPath
   $logFile = New-Item -Path $logPath.FilePath -Name "log-$(get-date -Format ddMMyyyy-hhmmss).log" -Force
 
@@ -31,26 +33,25 @@ function New-NamAdUser {
   $importAdModule = Import-NamModule -Module ActiveDirectory
   if ($true -eq $importAdModule.Result) {
     New-Log -Level "INFO" -Message $importAdModule.Log -LogFile $logFile.FullName
-    
-    if (-not ($false -eq $importLocation)) {
-      $inputObject = Receive-InputData `
-        -FirstName $FirstName `
-        -LastName $LastName `
-        -Title $Title `
-        -Department $Department `
-        -Manager $Manager `
-        -Location $Location
-
-      $refedObject = Reference-DataAndLocation -InputData $inputObject -ReferenceData $importLocationData
-      if (-not ($refedObject.Result -eq "FAIL")) {
-        $createAdUser = Create-AdUser -InputData $refedObject
-        return $createAdUser
+    # check if location.csv has all required header
+    $locationCsvPath = "$($scriptDir)\..\data\location.csv"
+    $csvReqHeaderPath = "$($scriptDir)\..\data\location-required-header-csv.txt"
+    $getCsvReqHeader = Get-CsvRequiredHeader -FilePath $locationCsvPath -RequiredHeaderFile $csvReqHeaderPath
+    if ($true -eq $getCsvReqHeader.Result) {
+      New-Log -Level "INFO" -Message $getCsvReqHeader.Log -LogFile $logFile
+      # get reference data base on location
+      $locationCsvData = Import-Csv -Path $locationCsvPath
+      $getRefLocationData = Search-DataAndLocation -Location $Location -ReferenceData $locationCsvData
+      if ($true -eq $getRefLocationData) {
+        New-Log -Level "INFO" -Message $getRefLocationData.Log -LogFile $logFile
+        $getRefLocationData.LocationData
       }
       else {
-        return $refedObject
+        New-Log -Level "WARN" -Message $getRefLocationData.Log -LogFile $logFile
       }
     }
     else {
+      New-Log -Level "ERROR" -Message $getCsvReqHeader.Log -LogFile $logFile
       break
     }
   }
