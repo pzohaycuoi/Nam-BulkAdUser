@@ -11,6 +11,6 @@ function New-UserDisplayName {
   # first name and last name will be seperated by "," and " "
   # Ex: Nam Nguyen => Nam, Nguyen
 
-  $userDisplayName = "$($FirstName), $($LastName)"
+  $userDisplayName = "$($FirstName).$($LastName)"
   return $userDisplayName
 }

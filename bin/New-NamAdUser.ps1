@@ -24,6 +24,7 @@ function New-NamAdUser {
   
   # current path
   $scriptDir = $PSScriptRoot
+
   # logging and result
   $logPath = "$($scriptDir)\..\log\"
   $logPath = Set-PathIsLinuxOrWin -FilePath $logPath
@@ -33,36 +34,58 @@ function New-NamAdUser {
   $importAdModule = Import-NamModule -Module ActiveDirectory
   if ($true -eq $importAdModule.Result) {
     New-Log -Level "INFO" -Message $importAdModule.Log -LogFile $logFile.FullName
+
     # check if location.csv has all required header
     $locationCsvPath = "$($scriptDir)\..\data\location.csv"
     $csvReqHeaderPath = "$($scriptDir)\..\data\location-required-header-csv.txt"
     $getCsvReqHeader = Get-CsvRequiredHeader -FilePath $locationCsvPath -RequiredHeaderFile $csvReqHeaderPath
-    if ($true -eq $getCsvReqHeader.Result) {
-      New-Log -Level "INFO" -Message $getCsvReqHeader.Log -LogFile $logFile
+
+    if ($getCsvReqHeader.Result -eq $true) {
+      New-Log -Level "INFO" -Message $getCsvReqHeader.Log -LogFile $logFile.FullName
+
       # get reference data base on location
       $locationCsvData = Import-Csv -Path $locationCsvPath
       $getRefLocationData = Search-DataAndLocation -Location $Location -ReferenceData $locationCsvData
-      if ($true -eq $getRefLocationData) {
-        New-Log -Level "INFO" -Message $getRefLocationData.Log -LogFile $logFile
+
+      if ($getRefLocationData.Result -eq $true) {
+        New-Log -Level "INFO" -Message $getRefLocationData.Log -LogFile $logFile.FullName
+
         # create user basic information
         $userSan = New-UserSamAccountName -FirstName $FirstName -LastName $LastName
-        # check if user with this san exist yet
-        $checkIfUserExist = Test-AdUserExist -SamAccountName $userSan
-        if ($false -eq $checkIfUserExist.Exist) {
-          New-Log -Level "INFO" -Message $checkIfUserExist.Log -LogFile $logFile
+        $userName = New-UserDisplayName -FirstName $FirstName -LastName $LastName
+
+        # check if user with this SamAccountName and Name exist yet
+        $checkIfUserSanExist = Test-AdUserExist -SamAccountName $userSan
+        $checkIfUserNameExist = Test-AdUserExist -Name $userName
+
+        if ($checkIfUserSanExist.Exist -eq $true) {
+          $count = 0
+          do {
+            $count++
+            $newUserSan = "$($userSan)$($count)"
+            $checkIfUserSanExist = Test-AdUserExist -SamAccountName $newUserSan
+          } until ($false -eq $checkIfUserSanExist.Exist)
         }
-        elseif ($true -eq $checkIfUserExist.Exist) {
-          New-Log -Level "WARN" -Message $checkIfUserExist.Log -LogFile $logFile
-        } else {
-          New-Log -Level "WARN" -Message $checkIfUserExist.Log -LogFile $logFile
+
+        if ($checkIfUserNameExist.Exist -eq $true) {
+          $count = 0
+          do {
+            $count++
+            $newUserName = "$($userName)$($count)"
+            $checkIfUserNameExist = Test-AdUserExist -SamAccountName $newUserName
+          } until ($false -eq $checkIfUserNameExist.Exist)
+        }
+
+        else {
+          New-Log -Level "WARN" -Message $checkIfUserExist.Log -LogFile $logFile.FullName
         }
       }
       else {
-        New-Log -Level "WARN" -Message $getRefLocationData.Log -LogFile $logFile
+        New-Log -Level "WARN" -Message $getRefLocationData.Log -LogFile $logFile.FullName
       }
     }
     else {
-      New-Log -Level "ERROR" -Message $getCsvReqHeader.Log -LogFile $logFile
+      New-Log -Level "ERROR" -Message $getCsvReqHeader.Log -LogFile $logFile.FullName
       break
     }
   }

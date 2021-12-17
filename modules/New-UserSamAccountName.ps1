@@ -11,6 +11,6 @@ function New-UserSamAcccountName {
   # First letter of first name and whole last name
   # Ex: Nam Nguyen => nnguyen
 
-  $samAccountName = $FirstName[0] + $LastName
+  $samAccountName = "$($FirstName).$($LastName)"
   return $samAccountName
 }
