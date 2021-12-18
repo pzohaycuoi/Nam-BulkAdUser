@@ -6,13 +6,13 @@ function New-NamAdUser {
     [Parameter(Mandatory)]
     [string]$LastName,
 
-    [Parameter(Mandatory)]
+    [Parameter()]
     [string]$Title,
 
     [AllowEmptyString()]
     [string]$Department,
 
-    [Parameter(Mandatory)]
+    [Parameter()]
     [string]$Manager,
 
     [Parameter(Mandatory)]
@@ -51,7 +51,7 @@ function New-NamAdUser {
         New-Log -Level "INFO" -Message $getRefLocationData.Log -LogFile $logFile.FullName
 
         # create user basic information
-        $userSan = New-UserSamAccountName -FirstName $FirstName -LastName $LastName
+        $userSan = New-UserSamAcccountName -FirstName $FirstName -LastName $LastName
         $userName = New-UserDisplayName -FirstName $FirstName -LastName $LastName
 
         # check if user with this SamAccountName and Name exist yet
@@ -59,26 +59,65 @@ function New-NamAdUser {
         $checkIfUserNameExist = Test-AdUserExist -Name $userName
 
         if ($checkIfUserSanExist.Exist -eq $true) {
+          New-Log -Level "WARN" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
           $count = 0
+
           do {
             $count++
             $newUserSan = "$($userSan)$($count)"
             $checkIfUserSanExist = Test-AdUserExist -SamAccountName $newUserSan
           } until ($false -eq $checkIfUserSanExist.Exist)
+          New-Log -Level "INFO" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
+        }
+        else {
+          New-Log -Level "INFO" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
         }
 
         if ($checkIfUserNameExist.Exist -eq $true) {
+          New-Log -Level "WARN" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
           $count = 0
+
           do {
             $count++
             $newUserName = "$($userName)$($count)"
             $checkIfUserNameExist = Test-AdUserExist -SamAccountName $newUserName
           } until ($false -eq $checkIfUserNameExist.Exist)
+          New-Log -Level "INFO" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
+        }
+        else {
+          New-Log -Level "INFO" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
         }
 
-        else {
-          New-Log -Level "WARN" -Message $checkIfUserExist.Log -LogFile $logFile.FullName
+        # create random password
+        $password = New-RandomPassword -Length 12
+
+        # gathering basic information
+        $basicInfo = [PSCustomObject]@{
+          Name = $userName
+          FirstName = $FirstName
+          LastName = $LastName
+          SamAccountName = $userSan
+          UserPrincipalName = $userSan
+          Path = $getRefLocationData.oupath
+          Password = $password
         }
+
+        # create ad user
+        $createAdUser = New-AdUserProcess -Name $basicInfo.Name `
+          -GivenName $basicInfo.FirstName `
+          -SurName $basicInfo.LastName `
+          -SamAccountName $basicInfo.SamAccountName `
+          -UserPrincipalName $basicInfo.SamAccountName `
+          -Path $basicInfo.Path `
+          -AccountPassword $basicInfo.Password
+      }
+
+      if ($createAdUser.Result -eq $true) {
+        New-Log -Level "INFO" -Message $createAdUser.Log -LogFile $logFile.FullName
+
+      }
+      else {
+        New-Log -Level "ERROR" -Message $createAdUser.Log -LogFile $logFile.FullName
       }
       else {
         New-Log -Level "WARN" -Message $getRefLocationData.Log -LogFile $logFile.FullName

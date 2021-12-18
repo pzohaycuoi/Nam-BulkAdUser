@@ -19,8 +19,8 @@ function Test-AdUserExist {
       
       if (-not ($null -eq $checkAduserExist)) {
         $result | Add-Member -NotePropertyName "Exist" -NotePropertyValue $true
-        $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "User $($SamAccountName) is exist"
-        $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
+        $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "User with SamAccountName: $($SamAccountName) is exist"
+        $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $truec
         return $result
       }
     }
@@ -40,13 +40,13 @@ function Test-AdUserExist {
       
       if (-not ($null -eq $checkAduserExist)) {
         $result | Add-Member -NotePropertyName "Exist" -NotePropertyValue $true
-        $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "User $($Name) is exist"
+        $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "User with Name: $($Name) is exist"
         $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
         return $result
       }
       else {
         $result | Add-Member -NotePropertyName "Exist" -NotePropertyValue $false
-        $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "User $($Name) is not exist"
+        $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "User with Name: $($Name) is not exist"
         $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
         return $result
       }

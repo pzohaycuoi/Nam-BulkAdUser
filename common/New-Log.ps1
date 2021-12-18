@@ -18,6 +18,6 @@ function New-Log {
   # get the time that function is executed
   $getExecTime = Get-Date -Format ddMMyyyy-hhmmss
   $messageLog = "$($getExecTime) - [$($Level)] - $($Message)"
-  Write-Host -Message $messageLog
+  Write-Host $messageLog
   Add-Content -Path $LogFile -Value $messageLog
 }

@@ -41,16 +41,9 @@ function New-AdUserProcess {
       -DisplayName $Name `
       -GivenName $FirstName `
       -Surname $LastName `
-      -SamAccountName $samAccountName `
-      -UserPrincipalName $samAccountName `
-      -Title $Title `
+      -SamAccountName $SamAccountName `
+      -UserPrincipalName $SamAccountName `
       -Department $Department `
-      -Manager $Manager `
-      -StreetAddress $StreetAddress `
-      -City $City `
-      -State $State `
-      -PostalCode $Postalcode `
-      -Country $Country `
       -Path $OuPath `
       -AccountPassword $password `
       -ChangePasswordAtLogon $true `
