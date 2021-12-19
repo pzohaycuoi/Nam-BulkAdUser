@@ -122,6 +122,8 @@ function New-NamAdUser {
           New-Log -Level "INFO" -Message "UserPrincipalName: $($createAdUser.AdUserInfo.UserPrincipalName)" -LogFile $logFile.FullName
           New-Log -Level "INFO" -Message "OuPath: $($createAdUser.AdUserInfo.OuPath)" -LogFile $logFile.FullName
             
+          # set user organization information
+          
         }
         else {
           New-Log -Level "ERROR" -Message $createAdUser.Log -LogFile $logFile.FullName
