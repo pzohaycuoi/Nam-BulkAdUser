@@ -1,7 +1,7 @@
 function Import-NamModule {
   param (
-      [Parameter(Position=0)]
-      [string]$Module
+    [Parameter(Position = 0)]
+    [string]$Module
   ) 
 
   # Import module base on name or psm file path
@@ -21,7 +21,8 @@ function Import-NamModule {
       $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
       return $result
     }
-  } else {
+  }
+  else {
     $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: No module is provided"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
     return $result

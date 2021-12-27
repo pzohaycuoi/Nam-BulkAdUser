@@ -50,83 +50,92 @@ function New-NamAdUser {
       if ($getRefLocationData.Result -eq $true) {
         New-Log -Level "INFO" -Message $getRefLocationData.Log -LogFile $logFile.FullName
 
-        # create user basic information
-        $userSan = New-UserSamAcccountName -FirstName $FirstName -LastName $LastName
-        $userName = New-UserDisplayName -FirstName $FirstName -LastName $LastName
+        # test if OU path exist
+        $testOuPath = Test-OuPath -OuPath $getRefLocationData.LocationData.OuPath
 
-        # check if user with this SamAccountName and Name exist yet
-        $checkIfUserSanExist = Test-AdUserExist -SamAccountName $userSan
-        $checkIfUserNameExist = Test-AdUserExist -Name $userName
+        if ($testOuPath.Result -eq $true) {
+          New-Log -Level "INFO" -Message $testOuPath.Log -LogFile $logFile
+          # create user basic information
+          $userSan = New-UserSamAcccountName -FirstName $FirstName -LastName $LastName
+          $userName = New-UserDisplayName -FirstName $FirstName -LastName $LastName
 
-        if ($checkIfUserSanExist.Exist -eq $true) {
-          New-Log -Level "WARN" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
-          $count = 0
+          # check if user with this SamAccountName and Name exist yet
+          $checkIfUserSanExist = Test-AdUserExist -SamAccountName $userSan
+          $checkIfUserNameExist = Test-AdUserExist -Name $userName
 
-          do {
-            $count++
-            $newUserSan = "$($userSan)$($count)"
-            $checkIfUserSanExist = Test-AdUserExist -SamAccountName $newUserSan
-          } until ($false -eq $checkIfUserSanExist.Exist)
-          $userSan = $newUserSan
-          New-Log -Level "INFO" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
-        }
-        else {
-          New-Log -Level "INFO" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
-        }
+          if ($checkIfUserSanExist.Exist -eq $true) {
+            New-Log -Level "WARN" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
+            $count = 0
 
-        if ($checkIfUserNameExist.Exist -eq $true) {
-          New-Log -Level "WARN" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
-          $count = 0
+            do {
+              $count++
+              $newUserSan = "$($userSan)$($count)"
+              $checkIfUserSanExist = Test-AdUserExist -SamAccountName $newUserSan
+            } until ($false -eq $checkIfUserSanExist.Exist)
+            $userSan = $newUserSan
+            New-Log -Level "INFO" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
+          }
+          else {
+            New-Log -Level "INFO" -Message $checkIfUserSanExist.Log -LogFile $logFile.FullName
+          }
 
-          do {
-            $count++
-            $newUserName = "$($userName)$($count)"
-            $checkIfUserNameExist = Test-AdUserExist -SamAccountName $newUserName
-          } until ($false -eq $checkIfUserNameExist.Exist)
-          $userName = $newUserName
-          New-Log -Level "INFO" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
-        }
-        else {
-          New-Log -Level "INFO" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
-        }
+          if ($checkIfUserNameExist.Exist -eq $true) {
+            New-Log -Level "WARN" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
+            $count = 0
 
-        # create random password
-        $password = New-RandomPassword -Length 12
+            do {
+              $count++
+              $newUserName = "$($userName)$($count)"
+              $checkIfUserNameExist = Test-AdUserExist -SamAccountName $newUserName
+            } until ($false -eq $checkIfUserNameExist.Exist)
+            $userName = $newUserName
+            New-Log -Level "INFO" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
+          }
+          else {
+            New-Log -Level "INFO" -Message $checkIfUserNameExist.Log -LogFile $logFile.FullName
+          }
 
-        # gathering basic information
-        $basicInfo = [PSCustomObject]@{
-          Name              = $userName
-          FirstName         = $FirstName
-          LastName          = $LastName
-          SamAccountName    = $userSan
-          UserPrincipalName = $userSan
-          Path              = $getRefLocationData.LocationData.OuPath
-          Password          = $password
-        }
+          # create random password
+          $password = New-RandomPassword -Length 12
 
-        # create ad user
-        $createAdUser = New-AdUserProcess -Name $basicInfo.Name `
-          -GivenName $basicInfo.FirstName `
-          -SurName $basicInfo.LastName `
-          -SamAccountName $basicInfo.SamAccountName `
-          -UserPrincipalName $basicInfo.UserPrincipalName `
-          -Path $basicInfo.Path `
-          -AccountPassword $basicInfo.Password
+          # gathering basic information
+          $basicInfo = [PSCustomObject]@{
+            Name              = $userName
+            FirstName         = $FirstName
+            LastName          = $LastName
+            SamAccountName    = $userSan
+            UserPrincipalName = $userSan
+            Path              = $getRefLocationData.LocationData.OuPath
+            Password          = $password
+          }
 
-        if ($createAdUser.Result -eq $true) {
-          New-Log -Level "INFO" -Message $createAdUser.Log -LogFile $logFile.FullName
-          New-Log -Level "INFO" -Message "FirstName: $($createAdUser.AdUserInfo.FirstName)" -LogFile $logFile.FullName
-          New-Log -Level "INFO" -Message "LastName: $($createAdUser.AdUserInfo.LastName)" -LogFile $logFile.FullName
-          New-Log -Level "INFO" -Message "Name: $($createAdUser.AdUserInfo.Name)" -LogFile $logFile.FullName
-          New-Log -Level "INFO" -Message "SamAccountName: $($createAdUser.AdUserInfo.SamAccountName)" -LogFile $logFile.FullName
-          New-Log -Level "INFO" -Message "UserPrincipalName: $($createAdUser.AdUserInfo.UserPrincipalName)" -LogFile $logFile.FullName
-          New-Log -Level "INFO" -Message "OuPath: $($createAdUser.AdUserInfo.OuPath)" -LogFile $logFile.FullName
+          # create ad user
+          $createAdUser = New-AdUserProcess -Name $basicInfo.Name `
+            -GivenName $basicInfo.FirstName `
+            -SurName $basicInfo.LastName `
+            -SamAccountName $basicInfo.SamAccountName `
+            -UserPrincipalName $basicInfo.UserPrincipalName `
+            -Path $basicInfo.Path `
+            -AccountPassword $basicInfo.Password
+
+          if ($createAdUser.Result -eq $true) {
+            New-Log -Level "INFO" -Message $createAdUser.Log -LogFile $logFile.FullName
+            New-Log -Level "INFO" -Message "FirstName: $($createAdUser.AdUserInfo.FirstName)" -LogFile $logFile.FullName
+            New-Log -Level "INFO" -Message "LastName: $($createAdUser.AdUserInfo.LastName)" -LogFile $logFile.FullName
+            New-Log -Level "INFO" -Message "Name: $($createAdUser.AdUserInfo.Name)" -LogFile $logFile.FullName
+            New-Log -Level "INFO" -Message "SamAccountName: $($createAdUser.AdUserInfo.SamAccountName)" -LogFile $logFile.FullName
+            New-Log -Level "INFO" -Message "UserPrincipalName: $($createAdUser.AdUserInfo.UserPrincipalName)" -LogFile $logFile.FullName
+            New-Log -Level "INFO" -Message "OuPath: $($createAdUser.AdUserInfo.OuPath)" -LogFile $logFile.FullName
             
-          # set user organization information
-          
+            # set user organization information
+            
+          }
+          else {
+            New-Log -Level "ERROR" -Message $createAdUser.Log -LogFile $logFile.FullName
+          }
         }
         else {
-          New-Log -Level "ERROR" -Message $createAdUser.Log -LogFile $logFile.FullName
+          New-Log -Level "ERROR" -Message $testOuPath.Log -LogFile $logFile
         }
       }
       else {
