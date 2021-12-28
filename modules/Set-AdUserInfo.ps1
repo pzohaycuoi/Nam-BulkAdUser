@@ -99,7 +99,13 @@ function Set-AdUserInfo {
   
   $result = [PSCustomObject]@{}
   $result | Add-Member -NotePropertyName "User" -NotePropertyValue $Identity
-
+  $userInfos = @()
+  foreach ($item in $PSBoundParameters) {
+    $userInfos += $item
+  }
+  $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $userInfos
+  return $result
+  
   try {
     Set-AdUser -Identity $Identity `
       -DisplayName $Name `
@@ -117,8 +123,12 @@ function Set-AdUserInfo {
       -Country $Country `
       -EmployeeNumber $EmployeeNumber `
       -ErrorAction Stop
+    
+    $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Success: User with identity $($Identity) has been modified"
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
   }
   catch {
-    
+    $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
   }
 }
