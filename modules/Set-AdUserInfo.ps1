@@ -99,36 +99,50 @@ function Set-AdUserInfo {
   
   $result = [PSCustomObject]@{}
   $result | Add-Member -NotePropertyName "User" -NotePropertyValue $Identity
-  $userInfos = @()
-  foreach ($item in $PSBoundParameters) {
-    $userInfos += $item
+  # $userInfos = [PSCustomObject]@{}
+  # foreach ($item in $PSBoundParameters) {
+  #   $userInfos += $item
+  # }
+  $a = $PSBoundParameters
+  $a = [PSCustomObject]$a
+  $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $a
+  $parameterList = @("Identity","Name","FirstName","LastName","SamAccountName","UserPrincipalName","OuPath","Title",
+    "Department","Manager","StreetAddress","City","State","PostalCode","Country","EmployeeNumber")
+  $containList = @()
+  $notContainList = @()
+  foreach ($item in $a.keys) {
+    if ($parameterList -contains $item) {
+      $containList += $item
+    }
   }
-  $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $userInfos
-  return $result
+  $notContainList = $parameterList | Where { $_ -notin $containList }
   
-  try {
-    Set-AdUser -Identity $Identity `
-      -DisplayName $Name `
-      -GivenName $FirstName `
-      -Surname $LastName `
-      -SamAccountName $SamAccountName `
-      -UserPrincipalName $UserPrincipalName `
-      -Title $Title `
-      -Department $Department `
-      -Manager $Manager `
-      -StreetAddress $StreetAddress `
-      -City $City `
-      -State $State `
-      -PostalCode $PostalCode `
-      -Country $Country `
-      -EmployeeNumber $EmployeeNumber `
-      -ErrorAction Stop
+  # try {
+  #   Set-AdUser -Identity $Identity `
+  #     -DisplayName $Name `
+  #     -GivenName $FirstName `
+  #     -Surname $LastName `
+  #     -SamAccountName $SamAccountName `
+  #     -UserPrincipalName $UserPrincipalName `
+  #     -Title $Title `
+  #     -Department $Department `
+  #     -Manager $Manager `
+  #     -StreetAddress $StreetAddress `
+  #     -City $City `
+  #     -State $State `
+  #     -PostalCode $PostalCode `
+  #     -Country $Country `
+  #     -EmployeeNumber $EmployeeNumber `
+  #     -ErrorAction Stop
     
-    $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Success: User with identity $($Identity) has been modified"
-    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
-  }
-  catch {
-    $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
-    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
-  }
+  #   $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Success: User with identity $($Identity) has been modified"
+  #   $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
+  #   return $result
+  # }
+  # catch {
+  #   Write-Host $Error
+  #   $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
+  #   $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+  #   return $result
+  # }
 }
