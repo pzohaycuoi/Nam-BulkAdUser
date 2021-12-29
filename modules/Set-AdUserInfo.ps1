@@ -103,38 +103,38 @@ function Set-AdUserInfo {
   # foreach ($item in $PSBoundParameters) {
   #   $userInfos += $item
   # }
-  $a = $PSBoundParameters
-  $a = [PSCustomObject]$a
-  $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $a
+  $inputData = $PSBoundParameters
+  $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $inputData
   $parameterList = @("Identity","Name","FirstName","LastName","SamAccountName","UserPrincipalName","OuPath","Title",
     "Department","Manager","StreetAddress","City","State","PostalCode","Country","EmployeeNumber")
+
+  # try {
+  #   $userInfo = Get-ADUser -Identity $Identity -ErrorAction Stop
+  # }
+  # catch {
+  #   $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
+  #   $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+  #   return $result
+  # }
+
   $containList = @()
   $notContainList = @()
-  foreach ($item in $a.keys) {
-    if ($parameterList -contains $item) {
-      $containList += $item
+
+  foreach ($userAttribute in $inputData.GetEnumerator()) {
+    $userAttributeKey = $userAttribute.Key
+    $userAttributeValue = $userAttribute.Value
+    $userInfo.$userAttributeKey = $userAttributeValue
+    $userInfo.$userAttributeKey
+
+    if ($parameterList -contains $userAttribute.Key) {
+      $containList += $userAttribute.Key
     }
   }
+
   $notContainList = $parameterList | Where { $_ -notin $containList }
   
   # try {
-  #   Set-AdUser -Identity $Identity `
-  #     -DisplayName $Name `
-  #     -GivenName $FirstName `
-  #     -Surname $LastName `
-  #     -SamAccountName $SamAccountName `
-  #     -UserPrincipalName $UserPrincipalName `
-  #     -Title $Title `
-  #     -Department $Department `
-  #     -Manager $Manager `
-  #     -StreetAddress $StreetAddress `
-  #     -City $City `
-  #     -State $State `
-  #     -PostalCode $PostalCode `
-  #     -Country $Country `
-  #     -EmployeeNumber $EmployeeNumber `
-  #     -ErrorAction Stop
-    
+  #   Set-AdUser -Instance $userInfo -ErrorAction Stop
   #   $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Success: User with identity $($Identity) has been modified"
   #   $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
   #   return $result
