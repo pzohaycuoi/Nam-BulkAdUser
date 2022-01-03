@@ -108,14 +108,14 @@ function Set-AdUserInfo {
   $parameterList = @("Identity","Name","FirstName","LastName","SamAccountName","UserPrincipalName","OuPath","Title",
     "Department","Manager","StreetAddress","City","State","PostalCode","Country","EmployeeNumber")
 
-  # try {
-  #   $userInfo = Get-ADUser -Identity $Identity -ErrorAction Stop
-  # }
-  # catch {
-  #   $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
-  #   $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
-  #   return $result
-  # }
+  try {
+    $userInfo = Get-ADUser -Identity $Identity -ErrorAction Stop
+  }
+  catch {
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+    return $result
+  }
 
   $containList = @()
   $notContainList = @()
@@ -124,7 +124,6 @@ function Set-AdUserInfo {
     $userAttributeKey = $userAttribute.Key
     $userAttributeValue = $userAttribute.Value
     $userInfo.$userAttributeKey = $userAttributeValue
-    $userInfo.$userAttributeKey
 
     if ($parameterList -contains $userAttribute.Key) {
       $containList += $userAttribute.Key
@@ -132,17 +131,18 @@ function Set-AdUserInfo {
   }
 
   $notContainList = $parameterList | Where { $_ -notin $containList }
-  
-  # try {
-  #   Set-AdUser -Instance $userInfo -ErrorAction Stop
-  #   $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Success: User with identity $($Identity) has been modified"
-  #   $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
-  #   return $result
-  # }
-  # catch {
-  #   Write-Host $Error
-  #   $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
-  #   $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
-  #   return $result
-  # }
+  $result | Add-Member -NotePropertyName "ContainList" -NotePropertyValue $containList
+  $result | Add-Member -NotePropertyName "NotContainList" -NotePropertyValue $notContainList
+
+  try {
+    Set-AdUser -Instance $userInfo -ErrorAction Stop
+    $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Success: User with identity $($Identity) has been modified"
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $true
+    return $result
+  }
+  catch {
+    $result | Add-member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
+    $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+    return $result
+  }
 }
