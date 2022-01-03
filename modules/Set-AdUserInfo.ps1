@@ -8,19 +8,19 @@ function Set-AdUserInfo {
     [AllowNull()]
     [AllowEmptyString()]
     [AllowEmptyCollection()]
-    [string]$Name,
+    [string]$DisplayName,
 
     [Parameter()]
     [AllowNull()]
     [AllowEmptyString()]
     [AllowEmptyCollection()]
-    [string]$FirstName,
+    [string]$GivenName,
 
     [Parameter()]
     [AllowNull()]
     [AllowEmptyString()]
     [AllowEmptyCollection()]
-    [string]$LastName,
+    [string]$SurName,
 
     [Parameter()]
     [AllowNull()]
@@ -99,13 +99,9 @@ function Set-AdUserInfo {
   
   $result = [PSCustomObject]@{}
   $result | Add-Member -NotePropertyName "User" -NotePropertyValue $Identity
-  # $userInfos = [PSCustomObject]@{}
-  # foreach ($item in $PSBoundParameters) {
-  #   $userInfos += $item
-  # }
   $inputData = $PSBoundParameters
   $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $inputData
-  $parameterList = @("Identity","Name","FirstName","LastName","SamAccountName","UserPrincipalName","OuPath","Title",
+  $parameterList = @("DisplayName","GivenName","SurName","SamAccountName","UserPrincipalName","OuPath","Title",
     "Department","Manager","StreetAddress","City","State","PostalCode","Country","EmployeeNumber")
 
   try {
@@ -120,15 +116,18 @@ function Set-AdUserInfo {
   $containList = @()
   $notContainList = @()
 
+  # if any parameter has value then add it into the user object
   foreach ($userAttribute in $inputData.GetEnumerator()) {
     $userAttributeKey = $userAttribute.Key
     $userAttributeValue = $userAttribute.Value
-    $userInfo.$userAttributeKey = $userAttributeValue
 
-    if ($parameterList -contains $userAttribute.Key) {
-      $containList += $userAttribute.Key
+    # Add value into user object for modifying user information
+    if ($parameterList -contains $userAttributeKey) {
+      $containList += $userAttributeKey
+      $userInfo.$userAttributeKey = $userAttributeValue
     }
   }
+  Write-Host $userInfo.Title
 
   $notContainList = $parameterList | Where { $_ -notin $containList }
   $result | Add-Member -NotePropertyName "ContainList" -NotePropertyValue $containList
