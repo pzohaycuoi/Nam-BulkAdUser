@@ -38,12 +38,6 @@ function Set-AdUserInfo {
     [AllowNull()]
     [AllowEmptyString()]
     [AllowEmptyCollection()]
-    [string]$OuPath,
-
-    [Parameter()]
-    [AllowNull()]
-    [AllowEmptyString()]
-    [AllowEmptyCollection()]
     [string]$Title,
 
     [Parameter()]
@@ -101,7 +95,7 @@ function Set-AdUserInfo {
   $result | Add-Member -NotePropertyName "User" -NotePropertyValue $Identity
   $inputData = $PSBoundParameters
   $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $inputData
-  $parameterList = @("DisplayName","GivenName","SurName","SamAccountName","UserPrincipalName","OuPath","Title",
+  $parameterList = @("DisplayName","GivenName","SurName","SamAccountName","UserPrincipalName","Title",
     "Department","Manager","StreetAddress","City","State","PostalCode","Country","EmployeeNumber")
 
   try {
@@ -127,9 +121,8 @@ function Set-AdUserInfo {
       $userInfo.$userAttributeKey = $userAttributeValue
     }
   }
-  Write-Host $userInfo.Title
 
-  $notContainList = $parameterList | Where { $_ -notin $containList }
+  $notContainList = $parameterList | Where-Object { $_ -notin $containList }
   $result | Add-Member -NotePropertyName "ContainList" -NotePropertyValue $containList
   $result | Add-Member -NotePropertyName "NotContainList" -NotePropertyValue $notContainList
 
