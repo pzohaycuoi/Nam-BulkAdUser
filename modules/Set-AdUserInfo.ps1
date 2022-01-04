@@ -94,16 +94,29 @@ function Set-AdUserInfo {
   $result = [PSCustomObject]@{}
   $result | Add-Member -NotePropertyName "User" -NotePropertyValue $Identity
   $inputData = $PSBoundParameters
-  $parameterList = @("DisplayName","GivenName","SurName","SamAccountName","UserPrincipalName","Title",
-    "Department","Manager","StreetAddress","City","State","PostalCode","Country","EmployeeNumber")
+  $parameterList = @("DisplayName", "GivenName", "SurName", "SamAccountName", "UserPrincipalName", "Title",
+    "Department", "Manager", "StreetAddress", "City", "State", "PostalCode", "Country", "EmployeeNumber")
 
+  # get user information
   try {
     $userInfo = Get-ADUser -Identity $Identity -ErrorAction Stop
   }
   catch {
-    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: $($_)"
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Get-AD USer Failed: $($_)"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
     return $result
+  }
+
+  # if manager paramter is filled then get manager information
+  if (($Manager -ne '') -and ($Manager -ne $null)) {
+    try {
+      $userInfo = Get-ADUser -Identity $Manager -ErrorAction Stop
+    }
+    catch {
+      $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Get-AD USer Failed: $($_)"
+      $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
+      return $result
+    } 
   }
 
   $containList = @()

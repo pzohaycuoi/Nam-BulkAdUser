@@ -127,9 +127,43 @@ function New-NamAdUser {
             New-Log -Level "INFO" -Message "UserPrincipalName: $($createAdUser.AdUserInfo.UserPrincipalName)" -LogFile $logFile.FullName
             New-Log -Level "INFO" -Message "OuPath: $($createAdUser.AdUserInfo.OuPath)" -LogFile $logFile.FullName
             
-            # set user organization information
-            $setAdUserInfo = Set-AdUserInfo -Identity $basicInfo.SamAccountName
+            # gathering user's organization information
+            $orgInfo = [PSCustomObject]@{
+              Identity       = $userSan
+              DisplayName    = $userName
+              Title          = $Title
+              Department     = $Department
+              Manager        = $Manager
+              StreetAddress  = $getRefLocationData.LocationData.StreetAddress
+              City           = $getRefLocationData.LocationData.City
+              State          = $getRefLocationData.LocationData.State
+              PostalCode     = $getRefLocationData.LocationData.PostalCode
+              Country        = $getRefLocationData.LocationData.Country
+              EmployeeNumber = $EmployeeNumber
+            }
 
+            # set user organization information
+            $setAdUserInfo = Set-AdUserInfo -Identity $orgInfo.Identity `
+              -DisplayName $orgInfo.DisplayName `
+              -Title $orgInfo.Title `
+              -Department $orgInfo.Department `
+              -Manager $orgInfo.Manager `
+              -StreetAddress $orgInfo.StreetAddress `
+              -City $orgInfo.City `
+              -State $orgInfo.State `
+              -PostalCode $orgInfo.PostalCode `
+              -Country $orgInfo.Country `
+              -EmployeeNumber $orgInfo.EmployeeNumber
+
+            if ($setAdUserInfo.Result -eq $true) {
+              New-Log -Level "INFO" -Message $setAdUserInfo.Log -LogFile $logFile.FullName
+              foreach ($log in $setAdUserInfo.UserInfo) {
+                New-Log -Level "INFO" -Message $log -LogFile $logFile.FullName
+              }
+            }
+            else {
+              New-Log -Level "ERROR" -Message $setAdUserInfo.Log -LogFile $logFile.FullName
+            }
           }
           else {
             New-Log -Level "ERROR" -Message $createAdUser.Log -LogFile $logFile.FullName
@@ -141,6 +175,7 @@ function New-NamAdUser {
       }
       else {
         New-Log -Level "WARN" -Message $getRefLocationData.Log -LogFile $logFile.FullName
+        break
       }
     }
     else {
