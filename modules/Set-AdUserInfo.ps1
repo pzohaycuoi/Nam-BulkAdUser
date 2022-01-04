@@ -94,7 +94,6 @@ function Set-AdUserInfo {
   $result = [PSCustomObject]@{}
   $result | Add-Member -NotePropertyName "User" -NotePropertyValue $Identity
   $inputData = $PSBoundParameters
-  $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $inputData
   $parameterList = @("DisplayName","GivenName","SurName","SamAccountName","UserPrincipalName","Title",
     "Department","Manager","StreetAddress","City","State","PostalCode","Country","EmployeeNumber")
 
@@ -109,6 +108,7 @@ function Set-AdUserInfo {
 
   $containList = @()
   $notContainList = @()
+  $userInfoForCreating = [PSCustomObject]@{}
 
   # if any parameter has value then add it into the user object
   foreach ($userAttribute in $inputData.GetEnumerator()) {
@@ -116,12 +116,17 @@ function Set-AdUserInfo {
     $userAttributeValue = $userAttribute.Value
 
     # Add value into user object for modifying user information
-    if ($parameterList -contains $userAttributeKey) {
+    if (($parameterList -contains $userAttributeKey) -and ($userAttributeValue -ne '') -and ($userAttributeValue -ne $null)) {
       $containList += $userAttributeKey
       $userInfo.$userAttributeKey = $userAttributeValue
+      $userInfoForCreating | Add-Member -NotePropertyName $userAttributeKey -NotePropertyValue $userAttributeValue
+    }
+    else {
+      continue
     }
   }
 
+  $result | Add-Member -NotePropertyName "UserInfo" -NotePropertyValue $userInfoForCreating
   $notContainList = $parameterList | Where-Object { $_ -notin $containList }
   $result | Add-Member -NotePropertyName "ContainList" -NotePropertyValue $containList
   $result | Add-Member -NotePropertyName "NotContainList" -NotePropertyValue $notContainList
