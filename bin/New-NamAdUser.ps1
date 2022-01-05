@@ -142,19 +142,38 @@ function New-NamAdUser {
               EmployeeNumber = $EmployeeNumber
             }
 
-            # set user organization information
-            $setAdUserInfo = Set-AdUserInfo -Identity $orgInfo.Identity `
-              -DisplayName $orgInfo.DisplayName `
-              -Title $orgInfo.Title `
-              -Department $orgInfo.Department `
-              -Manager $orgInfo.Manager `
-              -StreetAddress $orgInfo.StreetAddress `
-              -City $orgInfo.City `
-              -State $orgInfo.State `
-              -PostalCode $orgInfo.PostalCode `
-              -Country $orgInfo.Country `
-              -EmployeeNumber $orgInfo.EmployeeNumber
+            # Check if manager exist
+            $checkIfManagerExist = Test-AdUserExist -SamAccountName $orgInfo.Manager
 
+            if ($checkIfManagerExist.Exist -eq $true) {
+              New-Log -Level "INFO" -Message $checkIfManagerExist.Log -LogFile $logFile.FullName
+              # set user organization information
+              $setAdUserInfo = Set-AdUserInfo -Identity $orgInfo.Identity `
+                -DisplayName $orgInfo.DisplayName `
+                -Title $orgInfo.Title `
+                -Department $orgInfo.Department `
+                -Manager $orgInfo.Manager `
+                -StreetAddress $orgInfo.StreetAddress `
+                -City $orgInfo.City `
+                -State $orgInfo.State `
+                -PostalCode $orgInfo.PostalCode `
+                -Country $orgInfo.Country `
+                -EmployeeNumber $orgInfo.EmployeeNumber
+            }
+            else {
+              New-Log -Level "INFO" -Message $checkIfManagerExist.Log -LogFile $logFile.FullName
+              # set user organization information without manager
+              $setAdUserInfo = Set-AdUserInfo -Identity $orgInfo.Identity `
+                -DisplayName $orgInfo.DisplayName `
+                -Title $orgInfo.Title `
+                -Department $orgInfo.Department `
+                -StreetAddress $orgInfo.StreetAddress `
+                -City $orgInfo.City `
+                -State $orgInfo.State `
+                -PostalCode $orgInfo.PostalCode `
+                -Country $orgInfo.Country `
+                -EmployeeNumber $orgInfo.EmployeeNumber
+            }
             if ($setAdUserInfo.Result -eq $true) {
               New-Log -Level "INFO" -Message $setAdUserInfo.Log -LogFile $logFile.FullName
               foreach ($log in $setAdUserInfo.UserInfo) {
