@@ -196,7 +196,7 @@ function New-NamAdUser {
         }
       }
       else {
-        New-Log -Level "WARN" -Message $getRefLocationData.Log -LogFile $logFile.FullName
+        New-Log -Level "ERROR" -Message $getRefLocationData.Log -LogFile $logFile.FullName
         break
       }
     }
