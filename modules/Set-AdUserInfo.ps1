@@ -50,7 +50,7 @@ function Set-AdUserInfo {
     [AllowNull()]
     [AllowEmptyString()]
     [AllowEmptyCollection()]
-    [string]$Manager,
+    [psobject]$Manager,
 
     [Parameter()]
     [AllowNull()]
@@ -102,21 +102,21 @@ function Set-AdUserInfo {
     $userInfo = Get-ADUser -Identity $Identity -ErrorAction Stop
   }
   catch {
-    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Get-AD USer Failed: $($_)"
+    $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: Unable to get user $($Identity) Info: $($_)"
     $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
     return $result
   }
 
-  # if manager paramter is filled then get manager information
+  # if manager parameter has value then get manager information
   if (($Manager -ne '') -and ($Manager -ne $null)) {
     try {
-      $userInfo = Get-ADUser -Identity $Manager -ErrorAction Stop
+      $Manager = Get-ADUser -Identity $Manager -ErrorAction Stop
     }
     catch {
-      $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Get-AD USer Failed: $($_)"
+      $result | Add-Member -NotePropertyName "Log" -NotePropertyValue "Failed: Unable to get manager $($Manager) Info: $($_)"
       $result | Add-Member -NotePropertyName "Result" -NotePropertyValue $false
       return $result
-    } 
+    }
   }
 
   $containList = @()
@@ -130,9 +130,17 @@ function Set-AdUserInfo {
 
     # Add value into user object for modifying user information
     if (($parameterList -contains $userAttributeKey) -and ($userAttributeValue -ne '') -and ($userAttributeValue -ne $null)) {
-      $containList += $userAttributeKey
-      $userInfo.$userAttributeKey = $userAttributeValue
-      $userInfoForCreating | Add-Member -NotePropertyName $userAttributeKey -NotePropertyValue $userAttributeValue
+      # if manager paramter is provided then get information from $Manager variable instead of paramter value
+      if ($userAttributeKey -eq "Manager") {
+        $userInfo.Manager = $Manager
+        $containList += $userAttributeKey
+        $userInfoForCreating | Add-Member -NotePropertyName $userAttributeKey -NotePropertyValue $userAttributeValue
+      }
+      else {
+        $containList += $userAttributeKey
+        $userInfo.$userAttributeKey = $userAttributeValue
+        $userInfoForCreating | Add-Member -NotePropertyName $userAttributeKey -NotePropertyValue $userAttributeValue 
+      }
     }
     else {
       continue
