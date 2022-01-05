@@ -182,14 +182,17 @@ function New-NamAdUser {
             }
             else {
               New-Log -Level "ERROR" -Message $setAdUserInfo.Log -LogFile $logFile.FullName
+              continue
             }
           }
           else {
             New-Log -Level "ERROR" -Message $createAdUser.Log -LogFile $logFile.FullName
+            continue
           }
         }
         else {
           New-Log -Level "ERROR" -Message $testOuPath.Log -LogFile $logFile
+          continue
         }
       }
       else {
