@@ -19,17 +19,23 @@ function New-NamAdUser {
     [string]$Location,
 
     [AllowEmptyString()]
-    [string]$EmployeeNumber
+    [string]$EmployeeNumber,
+
+    [Parameter()]
+    [string]$LogFile
   )
   
   # current path
   $scriptDir = $PSScriptRoot
 
-  # logging and result
-  $logPath = "$($scriptDir)\..\log\"
-  $logPath = Set-PathIsLinuxOrWin -FilePath $logPath
-  $logFile = New-Item -Path $logPath.FilePath -Name "log-$(get-date -Format ddMMyyyy-hhmmss).log" -Force
-
+  # if LogFile parameter is not defined then create the log file
+  if (($LogFile -eq '') -or ($LogFile -eq $null)) {
+    # logging
+    $logPath = "$($scriptDir)\..\log\"
+    $logPath = Set-PathIsLinuxOrWin -FilePath $logPath
+    $logFile = New-Item -Path $logPath.FilePath -Name "log-$(get-date -Format ddMMyyyy-hhmmss).log" -Force  
+  }
+  
   # try to import ad module
   $importAdModule = Import-NamModule -Module ActiveDirectory
   if ($true -eq $importAdModule.Result) {
@@ -182,31 +188,31 @@ function New-NamAdUser {
             }
             else {
               New-Log -Level "ERROR" -Message $setAdUserInfo.Log -LogFile $logFile.FullName
-              continue
+              return $setAdUserInfo
             }
           }
           else {
             New-Log -Level "ERROR" -Message $createAdUser.Log -LogFile $logFile.FullName
-            continue
+            return $createAdUser
           }
         }
         else {
           New-Log -Level "ERROR" -Message $testOuPath.Log -LogFile $logFile
-          continue
+          return $testOuPath
         }
       }
       else {
         New-Log -Level "ERROR" -Message $getRefLocationData.Log -LogFile $logFile.FullName
-        break
+        return $getRefLocationData
       }
     }
     else {
       New-Log -Level "ERROR" -Message $getCsvReqHeader.Log -LogFile $logFile.FullName
-      break
+      return $getCsvReqHeader
     }
   }
   else {
     New-Log -Level "ERROR" -Message $importAdModule.Log -LogFile $logFile.FullName
-    break
+    return $importAdModule
   } 
 }
